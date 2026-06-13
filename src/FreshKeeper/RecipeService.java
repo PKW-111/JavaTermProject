@@ -1,7 +1,6 @@
 package FreshKeeper;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class RecipeService {
     private ArrayList<Recipe> recipes;
@@ -11,7 +10,6 @@ public class RecipeService {
         initializeRecipes();
     }
 
-    // 기본 레시피 초기화
     private void initializeRecipes() {
         Recipe pasta = new Recipe("스파게티");
         pasta.addIngredient("파스타");
@@ -55,52 +53,63 @@ public class RecipeService {
         recipes.add(omelette);
     }
 
-    // 추천 메뉴 조회
+    // 고도화된 추천 메뉴 조회
     public ArrayList<RecipeResult> recommendRecipes(FoodService foodService) {
         ArrayList<RecipeResult> results = new ArrayList<>();
 
         for (Recipe recipe : recipes) {
             ArrayList<String> missingIngredients = new ArrayList<>();
+            ArrayList<Food> availableFoods = new ArrayList<>();
             ArrayList<String> recipeIngredients = recipe.getIngredients();
 
-            // 각 레시피의 재료를 확인
+            int score = 0;
+
+            // 각 레시피의 재료 확인
             for (String ingredient : recipeIngredients) {
-                if (!hasFoodByName(foodService, ingredient)) {
+                Food food = foodService.findFoodByName(ingredient);
+
+                if (food == null) {
+                    // 재료 없음
                     missingIngredients.add(ingredient);
+                    score -= 3;
+                } else if (food.getStatus().equals("만료")) {
+                    // 만료된 재료는 사용 불가
+                    missingIngredients.add(ingredient);
+                    score -= 3;
+                } else {
+                    // 재료 보유 (+10점)
+                    availableFoods.add(food);
+                    score += 10;
+
+                    // 유통기한 3일 이내 재료 (+5점)
+                    if (food.getDaysRemaining() >= 0 && food.getDaysRemaining() <= 3) {
+                        score += 5;
+                    }
                 }
             }
 
-            // 일치도 계산 (보유하고 있는 재료의 비율)
-            int matchScore = 0;
-            if (recipeIngredients.size() > 0) {
-                int availableCount = recipeIngredients.size() - missingIngredients.size();
-                matchScore = (availableCount * 100) / recipeIngredients.size();
+            // 모든 재료 보유 시 추가 +10점
+            if (missingIngredients.isEmpty() && recipeIngredients.size() > 0) {
+                score += 10;
             }
 
-            RecipeResult result = new RecipeResult(recipe, matchScore, missingIngredients);
+            // 최소 0점으로 설정
+            if (score < 0) {
+                score = 0;
+            }
+
+            RecipeResult result = new RecipeResult(recipe, score, missingIngredients);
             results.add(result);
         }
 
-        // 일치도로 정렬 (높은 순서)
-        sortByMatchScore(results);
+        // 점수로 정렬 (높은 순서)
+        sortByScore(results);
 
         return results;
     }
 
-    // 음식명으로 보유 여부 확인
-    private boolean hasFoodByName(FoodService foodService, String foodName) {
-        ArrayList<Food> foods = foodService.getAllFoods();
-        for (Food food : foods) {
-            if (food.getName().toLowerCase().contains(foodName.toLowerCase()) ||
-                    foodName.toLowerCase().contains(food.getName().toLowerCase())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // 일치도로 정렬
-    private void sortByMatchScore(ArrayList<RecipeResult> results) {
+    // 점수로 정렬
+    private void sortByScore(ArrayList<RecipeResult> results) {
         for (int i = 0; i < results.size() - 1; i++) {
             for (int j = i + 1; j < results.size(); j++) {
                 if (results.get(i).getMatchScore() < results.get(j).getMatchScore()) {

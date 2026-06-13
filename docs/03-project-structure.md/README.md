@@ -3,7 +3,7 @@
 이 문서는 FreshKeeper의 **구조 설계, 역할 분담, 주차 기반 일정 계획**을 평가 기준에 맞춰 정리한 요약 페이지다.  
 상세 내용은 아래 본문 문서에서 확인한다.
 
-- [Project_Architecture_and_Schedule.md](../project_Architecture_and_Schedule.md/Project_Architecture_and_Schedule.md)
+- [Project_Architecture_and_Schedule.md](./Project_Architecture_and_Schedule.md)
 
 ## 요약
 

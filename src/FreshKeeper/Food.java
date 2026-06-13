@@ -21,6 +21,18 @@ public class Food {
         this.expiryDate = expiryDate;
     }
 
+    public Food(int id, String name, String category, int quantity, String location, LocalDate expiryDate) {
+        this.id = id;
+        this.name = name;
+        this.category = category;
+        this.quantity = quantity;
+        this.location = location;
+        this.expiryDate = expiryDate;
+        if (id >= nextId) {
+            nextId = id + 1;
+        }
+    }
+
     public int getId() {
         return id;
     }
@@ -45,13 +57,37 @@ public class Food {
         return expiryDate;
     }
 
-    // 유통기한으로부터 남은 일수 계산
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public void setExpiryDate(LocalDate expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    public void decreaseQuantity(int amount) {
+        if (this.quantity >= amount) {
+            this.quantity -= amount;
+        }
+    }
+
     public long getDaysRemaining() {
         LocalDate today = LocalDate.now();
         return ChronoUnit.DAYS.between(today, expiryDate);
     }
 
-    // 상태 분류 (만료, 오늘까지, 위험, 주의, 안전)
     public String getStatus() {
         long daysRemaining = getDaysRemaining();
 
