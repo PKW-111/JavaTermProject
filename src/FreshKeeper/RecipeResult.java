@@ -29,11 +29,23 @@ public class RecipeResult {
         return missingIngredients.size();
     }
 
+    // 추천 메뉴 조리 (재료 수량 감소)
+    public void cook(FoodService foodService) {
+        ArrayList<String> ingredients = recipe.getIngredients();
+
+        for (String ingredient : ingredients) {
+            Food food = foodService.findFoodByName(ingredient);
+            if (food != null && !food.getStatus().equals("만료")) {
+                food.decreaseQuantity(1);
+            }
+        }
+    }
+
     @Override
     public String toString() {
         int total = recipe.getIngredients().size();
         int available = total - missingIngredients.size();
-        return String.format("%s (일치도: %d%%) [보유: %d/%d]",
+        return String.format("%s (점수: %d점) [보유: %d/%d]",
                 recipe.getName(), matchScore, available, total);
     }
 }
